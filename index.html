@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Official Kale Price Index (Bandar Abbas Edition)</title>
+    <style>
+        /* CSS for a dramatic, slightly ridiculous look */
+        body {
+            font-family: 'Arial Black', Gadget, sans-serif;
+            background: linear-gradient(135deg, #1f1f1f 0%, #3e1717 100%); /* Dark, moody background */
+            color: #f0f0f0;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black box */
+            border: 5px solid #ffcc00; /* Gold border for "premium" feel */
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
+        }
+        h1 {
+            color: #ffcc00;
+            font-size: 3em;
+            text-shadow: 3px 3px #8b0000;
+            margin-bottom: 5px;
+        }
+        h2 {
+            color: #ffcc00;
+            font-size: 1.5em;
+            margin-top: 5px;
+            margin-bottom: 30px;
+        }
+        #price-display {
+            font-size: 5em;
+            color: #32cd32; /* Lime Green for money */
+            margin: 40px 0;
+            transition: all 0.5s ease-in-out;
+        }
+        #weather-info {
+            font-size: 1.2em;
+            border-top: 2px dashed #ffcc00;
+            padding-top: 20px;
+            margin-top: 30px;
+        }
+        .tax-alert {
+            color: #ff4500; /* Red-Orange for warning */
+            font-size: 1.5em;
+            margin-top: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        /* Style adjustment for single image to center it */
+        .kale-images {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .kale-images img {
+            max-width: 90%; /* Increased size since there is only one */
+            height: auto;
+            border: 3px solid #f0f0f0;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 0.8em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>The Kale Price Index</h1>
+        <h2>(Bandar Abbas - Red Horse Edition)</h2>
+
+        <div class="kale-images">
+            <a href='https://postimg.cc/vcRPpj0t' target='_blank'><img src='https://i.postimg.cc/kXGktP8z/10185.webp' border='0' alt='Red Horse Beer Bottle'></a>
+            </div>
+        
+        <p>Current Price of the mythical "Kale" in the shimmering city of Bandar Abbas:</p>
+
+        <div id="price-display">
+            Loading...
+        </div>
+
+        <div id="weather-info">
+            Weather Report: Connecting to Live Weather Data...
+        </div>
+
+        <div id="tax-alert" class="tax-alert hidden">
+            <center><b>20% CLOUD TAX APPLIED!</b></center><br>
+            It's a gloomy day for your wallet. (Rain/Clouds detected).
+        </div>
+
+        <div class="footer">
+            Disclaimer: Price is an estimate based on mystical market forces and a live weather report. Do not take this seriously, especially in regards to regulated items.
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const BASE_PRICE = 330000;
+        const CURRENCY = "TOMAN";
+        const RAIN_CLOUD_TAX_RATE = 0.25; // 20%
+
+        // *** API Key provided by the user ***
+        const API_KEY = "a193237e0ee6247901531ca4d6df323c"; 
+        const LATITUDE = 27.20; // Bandar Abbas Latitude
+        const LONGITUDE = 56.26; // Bandar Abbas Longitude
+        const API_URL = `https://api.openweathermap.org/data/2.5/weather?lat=${LATITUDE}&lon=${LONGITUDE}&appid=${API_KEY}`;
+        // --- END CONFIGURATION ---
+
+
+        async function getLiveWeatherAndPrice() {
+            let weatherCondition = "Unknown";
+            let finalPrice = BASE_PRICE;
+            let priceAdjusted = false;
+            let errorOccurred = false;
+
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+
+                if (response.ok) {
+                    const mainWeather = data.weather[0].main.toLowerCase();
+                    const description = data.weather[0].description;
+                    weatherCondition = description.charAt(0).toUpperCase() + description.slice(1);
+
+                    // Check for Rain or Cloudy conditions
+                    if (mainWeather.includes('rain') || mainWeather.includes('cloud') || mainWeather.includes('drizzle')) {
+                        finalPrice = BASE_PRICE * (1 + RAIN_CLOUD_TAX_RATE);
+                        priceAdjusted = true;
+                    }
+                } else {
+                    weatherCondition = `API Error: ${data.message || 'Could not fetch weather.'}`;
+                    errorOccurred = true;
+                    // Fallback to Base Price if API fails
+                }
+            } catch (error) {
+                console.error("Live API Error:", error.message);
+                weatherCondition = "Connection Failed (Using Base Price)";
+                errorOccurred = true;
+            }
+
+            // 1. Price Display Logic
+            const formattedPrice = finalPrice.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            document.getElementById('price-display').innerHTML = `<b>${formattedPrice} ${CURRENCY}</b>`;
+            
+            // 2. Weather and Tax Message Logic
+            let weatherMessage = `<b>Bandar Abbas Weather:</b> ${weatherCondition}`;
+            
+            if (priceAdjusted) {
+                weatherMessage += `<br>(<b>20% 'Cloud Tax' Surcharge Applied!</b>)`;
+                document.getElementById('tax-alert').classList.remove('hidden');
+                document.getElementById('price-display').style.color = '#ff4500'; // Change color on tax
+            } else {
+                weatherMessage += `<br>(<b>No Tax: Clear Skies = Clear Pricing!</b>)`;
+                document.getElementById('tax-alert').classList.add('hidden');
+                document.getElementById('price-display').style.color = '#32cd32'; // Keep green for normal price
+            }
+
+            // If an error occurred and the price wasn't adjusted, still show the base price message
+            if (errorOccurred && !priceAdjusted) {
+                weatherMessage += ` (Using Base Price)`;
+            }
+            
+            document.getElementById('weather-info').innerHTML = weatherMessage;
+        }
+
+        // Run the price check immediately on load, and every 10 minutes thereafter 
+        getLiveWeatherAndPrice();
+        setInterval(getLiveWeatherAndPrice, 600000); // 600,000 milliseconds = 10 minutes 
+
+    </script>
+</body>
+</html>
