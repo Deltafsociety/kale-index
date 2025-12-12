@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Official Kale Price Index (Bandar Abbas Edition)</title>
+    <title>The Official Kale Price Index </title>
     <style>
-        /* CSS for a dramatic, slightly ridiculous look */
+       
         body {
             font-family: 'Arial Black', Gadget, sans-serif;
-            background: linear-gradient(135deg, #1f1f1f 0%, #3e1717 100%); /* Dark, moody background */
+            background: linear-gradient(135deg, #1f1f1f 0%, #3e1717 100%); 
             color: #f0f0f0;
             text-align: center;
             padding: 20px;
@@ -16,8 +16,8 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black box */
-            border: 5px solid #ffcc00; /* Gold border for "premium" feel */
+            background-color: rgba(0, 0, 0, 0.7); 
+            border: 5px solid #ffcc00; 
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
@@ -36,7 +36,7 @@
         }
         #price-display {
             font-size: 5em;
-            color: #32cd32; /* Lime Green for money */
+            color: #32cd32;
             margin: 40px 0;
             transition: all 0.5s ease-in-out;
         }
@@ -47,21 +47,21 @@
             margin-top: 30px;
         }
         .tax-alert {
-            color: #ff4500; /* Red-Orange for warning */
+            color: #ff4500; 
             font-size: 1.5em;
             margin-top: 10px;
         }
         .hidden {
             display: none;
         }
-        /* Style adjustment for single image to center it */
+        
         .kale-images {
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
         }
         .kale-images img {
-            max-width: 90%; /* Increased size since there is only one */
+            max-width: 90%; 
             height: auto;
             border: 3px solid #f0f0f0;
             margin: 10px;
@@ -78,7 +78,7 @@
 <body>
 
     <div class="container">
-        <h1>The Kale Price Index</h1>
+        <h1>Kale Price Index</h1>
         <h2>(Bandar Abbas - Red Horse Edition)</h2>
 
         <div class="kale-images">
@@ -107,9 +107,9 @@
 
     <script>
         // --- CONFIGURATION ---
-        const BASE_PRICE = 330000;
+        const BASE_PRICE = 340000;
         const CURRENCY = "TOMAN";
-        const RAIN_CLOUD_TAX_RATE = 0.25; // 20%
+        const RAIN_CLOUD_TAX_RATE = 0.15; // 15%
 
         // *** API Key provided by the user ***
         const API_KEY = "a193237e0ee6247901531ca4d6df323c"; 
@@ -150,21 +150,21 @@
                 errorOccurred = true;
             }
 
-            // 1. Price Display Logic
+            // 1. Price Display 
             const formattedPrice = finalPrice.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             document.getElementById('price-display').innerHTML = `<b>${formattedPrice} ${CURRENCY}</b>`;
             
-            // 2. Weather and Tax Message Logic
+            // 2. Weather and Tax Message
             let weatherMessage = `<b>Bandar Abbas Weather:</b> ${weatherCondition}`;
             
             if (priceAdjusted) {
                 weatherMessage += `<br>(<b>20% 'Cloud Tax' Surcharge Applied!</b>)`;
                 document.getElementById('tax-alert').classList.remove('hidden');
-                document.getElementById('price-display').style.color = '#ff4500'; // Change color on tax
+                document.getElementById('price-display').style.color = '#ff4500'; // Change color 
             } else {
                 weatherMessage += `<br>(<b>No Tax: Clear Skies = Clear Pricing!</b>)`;
                 document.getElementById('tax-alert').classList.add('hidden');
-                document.getElementById('price-display').style.color = '#32cd32'; // Keep green for normal price
+                document.getElementById('price-display').style.color = '#32cd32'; // normal price
             }
 
             // If an error occurred and the price wasn't adjusted, still show the base price message
