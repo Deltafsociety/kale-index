@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Official Kale Price Index </title>
+    <title data-i18n-key="title">The Official Kale Price Index</title>
     <style>
-       
+        /* CSS for a dramatic, slightly ridiculous look */
         body {
             font-family: 'Arial Black', Gadget, sans-serif;
             background: linear-gradient(135deg, #1f1f1f 0%, #3e1717 100%); 
             color: #f0f0f0;
             text-align: center;
             padding: 20px;
+            direction: ltr; /* Default LTR for English */
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background-color: rgba(0, 0, 0, 0.7); 
             border: 5px solid #ffcc00; 
@@ -36,7 +37,7 @@
         }
         #price-display {
             font-size: 5em;
-            color: #32cd32;
+            color: #32cd32; 
             margin: 40px 0;
             transition: all 0.5s ease-in-out;
         }
@@ -45,6 +46,7 @@
             border-top: 2px dashed #ffcc00;
             padding-top: 20px;
             margin-top: 30px;
+            line-height: 1.5;
         }
         .tax-alert {
             color: #ff4500; 
@@ -54,7 +56,6 @@
         .hidden {
             display: none;
         }
-        
         .kale-images {
             display: flex;
             justify-content: center;
@@ -73,58 +74,266 @@
             font-size: 0.8em;
             color: #888;
         }
+        /* Chart Styles for SVG */
+        .chart-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ffcc00;
+            text-align: left;
+        }
+        #chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            overflow-x: auto; 
+        }
+        .price-line {
+            fill: none;
+            stroke: #32cd32; 
+            stroke-width: 3;
+            transition: all 0.5s;
+        }
+        .data-point {
+            fill: #ffcc00; 
+            stroke: #000;
+            stroke-width: 1;
+            transition: all 0.2s;
+        }
+        .prediction-box {
+            background-color: #8b0000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .prediction-box p {
+            margin: 5px 0;
+        }
+        .cheapest { color: #32cd32; font-weight: bold; }
+        .expensive { color: #ff4500; font-weight: bold; }
+
+        .lang-switcher {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .lang-switcher button {
+            background: #ffcc00;
+            color: #1f1f1f;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            border-radius: 5px;
+            margin-left: 5px;
+        }
+        .lang-switcher button:disabled {
+            background: #888;
+            color: #f0f0f0;
+            cursor: default;
+        }
     </style>
 </head>
-<body>
+<body onload="initPage()">
 
     <div class="container">
-        <h1>Kale Price Index</h1>
-        <h2>(Bandar Abbas - Red Horse Edition)</h2>
+        
+        <div class="lang-switcher">
+            <button onclick="switchLanguage('en')" id="lang-en">English</button>
+            <button onclick="switchLanguage('fa')" id="lang-fa">فارسی</button>
+        </div>
+
+        <h1 data-i18n-key="h1">The Kale Price Index</h1>
+        <h2 data-i18n-key="h2">Red Horse</h2>
 
         <div class="kale-images">
             <a href='https://postimg.cc/vcRPpj0t' target='_blank'><img src='https://i.postimg.cc/kXGktP8z/10185.webp' border='0' alt='Red Horse Beer Bottle'></a>
-            </div>
+        </div>
         
-        <p>Current Price of the mythical "Kale" in the shimmering city of Bandar Abbas:</p>
+        <p data-i18n-key="current_price_text">Current Price of the mythical "Kale" in the shimmering city of Bandar Abbas:</p>
 
         <div id="price-display">
-            Loading...
-        </div>
+            </div>
 
         <div id="weather-info">
             Weather Report: Connecting to Live Weather Data...
         </div>
 
         <div id="tax-alert" class="tax-alert hidden">
-            <center><b>20% CLOUD TAX APPLIED!</b></center><br>
-            It's a gloomy day for your wallet. (Rain/Clouds detected).
+            <center><b data-i18n-key="surcharge_title">PRICE SURCHARGE APPLIED!</b></center><br>
+            <span id="tax-details">Checking for conditions...</span>
+        </div>
+
+        <div class="chart-section">
+            <h3 data-i18n-key="chart_title">Current Month Price Tracker & Prediction</h3>
+            <p data-i18n-key="chart_subtitle" style="text-align: center;">Simulated daily price based on current month's historical tax probabilities:</p>
+            <div id="chart-container">
+                </div>
+            <div id="prediction-summary" class="prediction-box">
+                </div>
         </div>
 
         <div class="footer">
-            Disclaimer: Price is an estimate based on mystical market forces and a live weather report. Do not take this seriously, especially in regards to regulated items.
+            <span data-i18n-key="disclaimer">Disclaimer: Price is an estimate based on mystical market forces, a live weather report, and ancient Iranian calendar alignment. Do not take this seriously, especially in regards to regulated items.</span>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        const BASE_PRICE = 340000;
-        const CURRENCY = "TOMAN";
-        const RAIN_CLOUD_TAX_RATE = 0.15; // 15%
+        // --- TRANSLATION DATA ---
+        let currentLang = 'en';
 
-        // *** API Key provided by the user ***
+        const translations = {
+            en: {
+                title: 'The Official Kale Price Index (Bandar Abbas Edition)',
+                h1: 'The Kale Price Index',
+                h2: '(Bandar Abbas - Red Horse Edition)',
+                current_price_text: 'Current Price of the mythical "Kale" in the shimmering city of Bandar Abbas:',
+                weather_report_default: 'Weather Report: Connecting to Live Weather Data...',
+                surcharge_title: 'PRICE SURCHARGE APPLIED!',
+                chart_title: 'Current Month Price Tracker & Prediction',
+                chart_subtitle: 'Simulated daily price based on current month\'s historical tax probabilities:',
+                prediction_title: 'MONTHLY PRICE PREDICTION:',
+                disclaimer: 'Disclaimer: Price is an estimate based on mystical market forces, a live weather report, and ancient Iranian calendar alignment. Do not take this seriously, especially in regards to regulated items.',
+                
+                // Dynamic strings
+                weather_tax_rain: 'Rain Tax (+10%)',
+                weather_tax_cloud: 'Cloud Tax (+5%)',
+                day_tax_thursday: 'Thursday Tax (+5%)',
+                holiday_happy_nowruz: 'Nowruz Festival (Happy Tax: +10%)',
+                holiday_happy_gadir: 'Eid-e-Ghadir (Happy Tax: +10%)',
+                holiday_happy_yalda: 'Yalda Night (Happy Tax: +10%)',
+                holiday_sad_ashura: 'Ashura Hosseini (Sad Discount: -5%)',
+                holiday_sad_arbaeen: 'Arbaeen (Sad Discount: -5%)',
+                holiday_sad_reza: 'Martyrdom of Imam Reza (Sad Discount: -5%)',
+                price_adjusted: 'Price adjusted due to local factors.',
+                no_tax: 'No Tax: Clear Skies = Clear Pricing!',
+                connection_failed: 'Connection Failed (Using Base Price)',
+                api_error: 'API Error: (Using Base Price)',
+                cheapest: 'Cheapest Day Prediction:',
+                expensive: 'Most Expensive Day Prediction:',
+                today_live: '(Today - Live)',
+                no_tax_chart: 'No Tax',
+                base_price_error: '(Using Base Price)',
+                toman: 'TOMAN',
+                weather_label: 'Bandar Abbas Weather:',
+                day: 'Day'
+            },
+            fa: {
+                title: 'شاخص رسمی قیمت کله ',
+                h1: 'شاخص قیمت کله افسانه‌ای',
+                h2: '(  رد هورس)',
+                current_price_text: 'قیمت فعلی "کله" افسانه‌ای در شهر درخشان بندرعباس:',
+                weather_report_default: 'گزارش آب و هوا: در حال اتصال به اطلاعات زنده...',
+                surcharge_title: 'مالیات اضافی قیمت اعمال شد!',
+                chart_title: 'ردیاب و پیش‌بینی قیمت ماه جاری',
+                chart_subtitle: 'قیمت روزانه شبیه‌سازی شده بر اساس احتمالات تاریخی مالیات ماه جاری:',
+                prediction_title: 'پیش‌بینی قیمت ماهانه:',
+                disclaimer: 'سلب مسئولیت: قیمت یک تخمین است که بر اساس نیروهای بازار عرفانی، گزارش آب و هوای زنده و تقویم باستانی ایران محاسبه شده است. این موضوع را جدی نگیرید، به خصوص در مورد کالاهای تحت نظارت خخخ.',
+
+                // Dynamic strings
+                weather_tax_rain: 'مالیات باران (۱۰٪+)',
+                weather_tax_cloud: 'مالیات ابری (۵٪+)',
+                day_tax_thursday: 'مالیات پنجشنبه (۵٪+)',
+                holiday_happy_nowruz: 'جشن نوروز (تخفیف شاد: ۱۰٪+)',
+                holiday_happy_gadir: 'عید غدیر (تخفیف شاد: ۱۰٪+)',
+                holiday_happy_yalda: 'شب یلدا (تخفیف شاد: ۱۰٪+)',
+                holiday_sad_ashura: 'عاشورای حسینی (تخفیف غمگین: ۵٪-)',
+                holiday_sad_arbaeen: 'اربعین (تخفیف غمگین: ۵٪-)',
+                holiday_sad_reza: 'شهادت امام رضا (تخفیف غمگین: ۵٪-)',
+                price_adjusted: 'قیمت به دلیل عوامل محلی تنظیم شد.',
+                no_tax: 'بدون مالیات: آسمان صاف = قیمت‌گذاری صاف!',
+                connection_failed: 'اتصال ناموفق (استفاده از قیمت پایه)',
+                api_error: 'خطای API: (استفاده از قیمت پایه)',
+                cheapest: 'ارزان‌ترین روز پیش‌بینی شده:',
+                expensive: 'گران‌ترین روز پیش‌بینی شده:',
+                today_live: '(امروز - زنده)',
+                no_tax_chart: 'بدون مالیات',
+                base_price_error: '(استفاده از قیمت پایه)',
+                toman: 'تومان',
+                weather_label: 'آب و هوای بندرعباس:',
+                day: 'روز'
+            }
+        };
+
+        // Function to convert English digits to Persian digits
+        function toPersianDigits(str) {
+            if (currentLang !== 'fa') return str;
+            return str.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+        }
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('lang-en').disabled = (lang === 'en');
+            document.getElementById('lang-fa').disabled = (lang === 'fa');
+            document.body.dir = (lang === 'fa' ? 'rtl' : 'ltr');
+            
+            // Translate static elements
+            document.querySelectorAll('[data-i18n-key]').forEach(el => {
+                const key = el.getAttribute('data-i18n-key');
+                if (translations[lang][key]) {
+                    if (el.tagName === 'TITLE') {
+                        el.textContent = translations[lang][key];
+                    } else {
+                        el.innerHTML = translations[lang][key];
+                    }
+                }
+            });
+
+            // Re-run the main function to update dynamic text/numbers
+            getLiveWeatherAndPrice();
+        }
+
+        // --- CONFIGURATION ---
+        const BASE_PRICE = 350000;
+        const CURRENCY = "TOMAN"; // Used in logic, displayed as TOMAN/تومان
+        
+        // Taxes
+        const TAX_RAIN = 0.10; 
+        const TAX_CLOUD = 0.05; 
+        const TAX_THURSDAY = 0.05; 
+        const TAX_HAPPY_HOLIDAY = 0.10; 
+        const TAX_SAD_HOLIDAY = -0.05; 
+
+        // API Key (from previous user input)
         const API_KEY = "a193237e0ee6247901531ca4d6df323c"; 
-        const LATITUDE = 27.20; // Bandar Abbas Latitude
-        const LONGITUDE = 56.26; // Bandar Abbas Longitude
+        const LATITUDE = 27.20; 
+        const LONGITUDE = 56.26;
         const API_URL = `https://api.openweathermap.org/data/2.5/weather?lat=${LATITUDE}&lon=${LONGITUDE}&appid=${API_KEY}`;
         // --- END CONFIGURATION ---
 
+        function getHolidayStatus(date) {
+            const month = date.getMonth();
+            const day = date.getDate();
+
+            // Happy Holidays (+10%) - Based on 2025/2026 approximate Gregorian dates
+            if (month === 2 && (day >= 20 && day <= 24)) return { isHoliday: true, type: 'HAPPY', nameKey: 'holiday_happy_nowruz' };
+            if (month === 5 && day === 14) return { isHoliday: true, type: 'HAPPY', nameKey: 'holiday_happy_gadir' };
+            if (month === 11 && day === 21) return { isHoliday: true, type: 'HAPPY', nameKey: 'holiday_happy_yalda' };
+
+            // Sad Holidays (-5%) - Based on 2025/2026 approximate Gregorian dates
+            if (month === 6 && day === 6) return { isHoliday: true, type: 'SAD', nameKey: 'holiday_sad_ashura' };
+            if (month === 7 && day === 14) return { isHoliday: true, type: 'SAD', nameKey: 'holiday_sad_arbaeen' };
+            if (month === 7 && day === 24) return { isHoliday: true, type: 'SAD', nameKey: 'holiday_sad_reza' };
+
+            return { isHoliday: false, type: null };
+        }
+
+
+        function formatPrice(price) {
+            let str = price.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return toPersianDigits(str);
+        }
 
         async function getLiveWeatherAndPrice() {
-            let weatherCondition = "Unknown";
+            const today = new Date();
             let finalPrice = BASE_PRICE;
-            let priceAdjusted = false;
+            let weatherCondition = translations[currentLang]['weather_report_default'];
+            let taxDetails = [];
             let errorOccurred = false;
 
+            // --- 1. WEATHER-BASED TAX ---
+            let weatherTax = 0;
+            
             try {
                 const response = await fetch(API_URL);
                 const data = await response.json();
@@ -134,51 +343,206 @@
                     const description = data.weather[0].description;
                     weatherCondition = description.charAt(0).toUpperCase() + description.slice(1);
 
-                    // Check for Rain or Cloudy conditions
-                    if (mainWeather.includes('rain') || mainWeather.includes('cloud') || mainWeather.includes('drizzle')) {
-                        finalPrice = BASE_PRICE * (1 + RAIN_CLOUD_TAX_RATE);
-                        priceAdjusted = true;
+                    if (mainWeather.includes('rain') || mainWeather.includes('drizzle')) {
+                        weatherTax = TAX_RAIN;
+                        taxDetails.push(translations[currentLang]['weather_tax_rain']);
+                    } else if (mainWeather.includes('cloud') || mainWeather.includes('overcast')) {
+                        weatherTax = TAX_CLOUD;
+                        taxDetails.push(translations[currentLang]['weather_tax_cloud']);
                     }
                 } else {
-                    weatherCondition = `API Error: ${data.message || 'Could not fetch weather.'}`;
+                    weatherCondition = `${translations[currentLang]['api_error']} ${data.message || ''}`;
                     errorOccurred = true;
-                    // Fallback to Base Price if API fails
                 }
             } catch (error) {
                 console.error("Live API Error:", error.message);
-                weatherCondition = "Connection Failed (Using Base Price)";
+                weatherCondition = `${translations[currentLang]['connection_failed']}`;
                 errorOccurred = true;
             }
 
-            // 1. Price Display 
-            const formattedPrice = finalPrice.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            document.getElementById('price-display').innerHTML = `<b>${formattedPrice} ${CURRENCY}</b>`;
+            finalPrice += finalPrice * weatherTax;
+
+
+            // --- 2. THURSDAY TAX ---
+            if (today.getDay() === 4) { 
+                finalPrice += finalPrice * TAX_THURSDAY;
+                taxDetails.push(translations[currentLang]['day_tax_thursday']);
+            }
             
-            // 2. Weather and Tax Message
-            let weatherMessage = `<b>Bandar Abbas Weather:</b> ${weatherCondition}`;
-            
-            if (priceAdjusted) {
-                weatherMessage += `<br>(<b>20% 'Cloud Tax' Surcharge Applied!</b>)`;
-                document.getElementById('tax-alert').classList.remove('hidden');
-                document.getElementById('price-display').style.color = '#ff4500'; // Change color 
-            } else {
-                weatherMessage += `<br>(<b>No Tax: Clear Skies = Clear Pricing!</b>)`;
-                document.getElementById('tax-alert').classList.add('hidden');
-                document.getElementById('price-display').style.color = '#32cd32'; // normal price
+            // --- 3. HOLIDAY TAX ---
+            const holiday = getHolidayStatus(today);
+            if (holiday.isHoliday) {
+                if (holiday.type === 'HAPPY') {
+                    finalPrice += BASE_PRICE * TAX_HAPPY_HOLIDAY;
+                    taxDetails.push(translations[currentLang][holiday.nameKey]);
+                } else if (holiday.type === 'SAD') {
+                    finalPrice += BASE_PRICE * TAX_SAD_HOLIDAY;
+                    taxDetails.push(translations[currentLang][holiday.nameKey]);
+                }
             }
 
-            // If an error occurred and the price wasn't adjusted, still show the base price message
-            if (errorOccurred && !priceAdjusted) {
-                weatherMessage += ` (Using Base Price)`;
+
+            // --- FINAL PRICE DISPLAY & MESSAGES ---
+            const totalTaxApplied = taxDetails.length > 0;
+
+            document.getElementById('price-display').innerHTML = `<b>${formatPrice(finalPrice)} ${translations[currentLang]['toman']}</b>`;
+            
+            let weatherMessage = `<b>${translations[currentLang]['weather_label']}</b> ${weatherCondition}`;
+            
+            if (totalTaxApplied) {
+                document.getElementById('tax-alert').classList.remove('hidden');
+                document.getElementById('tax-details').innerHTML = taxDetails.join('<br>');
+                document.getElementById('price-display').style.color = finalPrice > BASE_PRICE ? '#ff4500' : '#32cd32';
+                weatherMessage += `<br>(${translations[currentLang]['price_adjusted']})`;
+            } else {
+                document.getElementById('tax-alert').classList.add('hidden');
+                document.getElementById('price-display').style.color = '#32cd32'; 
+                weatherMessage += `<br>(${translations[currentLang]['no_tax']})`;
+            }
+
+            if (errorOccurred) {
+                // If there was an API error, append the base price note to the weather message
+                 weatherMessage += ` (${translations[currentLang]['base_price_error']})`;
             }
             
             document.getElementById('weather-info').innerHTML = weatherMessage;
+            
+            // --- UPDATE CHART/PREDICTION ---
+            generatePriceChartAndPrediction(today);
         }
 
-        // Run the price check immediately on load, and every 10 minutes thereafter 
-        getLiveWeatherAndPrice();
-        setInterval(getLiveWeatherAndPrice, 600000); // 600,000 milliseconds = 10 minutes 
+        function initPage() {
+            // 1. Set the initial base price immediately on page load
+            document.getElementById('price-display').innerHTML = `<b>${formatPrice(BASE_PRICE)} ${translations[currentLang]['toman']}</b>`;
+            
+            // 2. Set the language
+            switchLanguage('en'); 
 
+            // 3. Start the repeating price check
+            setInterval(getLiveWeatherAndPrice, 600000); 
+        }
+
+        // --- CHART & PREDICTION LOGIC (Updated for translation) ---
+        function generatePriceChartAndPrediction(today) {
+            const CHART_WIDTH = 600;
+            const CHART_HEIGHT = 200;
+            const PADDING = 20; 
+            
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            let dailyPrices = [];
+            let priceValues = [];
+
+            // 1. CALCULATE SIMULATED MONTHLY PRICES
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(currentYear, currentMonth, day);
+                let price = BASE_PRICE;
+                
+                let weatherTax = 0;
+                const weatherRoll = Math.random();
+                if (weatherRoll < 0.2) { 
+                    weatherTax = TAX_RAIN;
+                } else if (weatherRoll < 0.5) { 
+                    weatherTax = TAX_CLOUD;
+                }
+                price += price * weatherTax;
+                
+                if (date.getDay() === 4) { 
+                    price += price * TAX_THURSDAY;
+                }
+
+                const holiday = getHolidayStatus(date);
+                if (holiday.isHoliday) {
+                    if (holiday.type === 'HAPPY') {
+                        price += BASE_PRICE * TAX_HAPPY_HOLIDAY;
+                    } else if (holiday.type === 'SAD') {
+                        price += BASE_PRICE * TAX_SAD_HOLIDAY;
+                    }
+                }
+
+                if (day === today.getDate()) {
+                    const currentPriceString = document.getElementById('price-display').innerText.replace(/[\D]/g,'');
+                    price = parseFloat(currentPriceString) || price;
+                }
+                
+                dailyPrices.push({ day: day, price: price });
+                priceValues.push(price);
+            }
+
+            // 2. FIND MIN/MAX FOR SCALING AND PREDICTION
+            const minPrice = Math.min(...priceValues);
+            const maxPrice = Math.max(...priceValues);
+            const priceRange = maxPrice - minPrice;
+            
+            let cheapestDay = '';
+            let mostExpensiveDay = '';
+            
+            dailyPrices.forEach(item => {
+                const date = new Date(currentYear, currentMonth, item.day);
+                const dayName = date.toLocaleDateString(currentLang === 'fa' ? 'fa-IR' : 'en-US', { weekday: 'short' });
+                const dayNumber = toPersianDigits(item.day.toString());
+                
+                if (item.price === minPrice) { 
+                    cheapestDay = `${dayName}, ${dayNumber}`; 
+                }
+                if (item.price === maxPrice) { 
+                    mostExpensiveDay = `${dayName}, ${dayNumber}`; 
+                }
+            });
+
+
+            // 3. GENERATE SVG LINE CHART
+            const graphAreaWidth = CHART_WIDTH - PADDING * 2;
+            const graphAreaHeight = CHART_HEIGHT - PADDING * 2;
+            let points = dailyPrices.map((data, index) => {
+                const x = PADDING + (index / (daysInMonth - 1)) * graphAreaWidth;
+                let normalizedPrice = (data.price - minPrice) / (priceRange === 0 ? 1 : priceRange);
+                const y = PADDING + graphAreaHeight - (normalizedPrice * graphAreaHeight);
+                return `${x},${y}`;
+            }).join(' ');
+
+            let svg = `
+                <svg width="${CHART_WIDTH}" height="${CHART_HEIGHT}" viewBox="0 0 ${CHART_WIDTH} ${CHART_HEIGHT}">
+                    
+                    <line x1="${PADDING}" y1="${PADDING}" x2="${CHART_WIDTH - PADDING}" y2="${PADDING}" stroke="#888" stroke-dasharray="2,2" stroke-width="0.5" />
+                    <text x="${currentLang === 'fa' ? CHART_WIDTH - PADDING + 5 : PADDING - 5}" y="${PADDING + 5}" fill="#f0f0f0" font-size="10" text-anchor="${currentLang === 'fa' ? 'start' : 'end'}">${toPersianDigits(formatPrice(maxPrice).split(',')[0])}K</text>
+                    
+                    <line x1="${PADDING}" y1="${CHART_HEIGHT - PADDING}" x2="${CHART_WIDTH - PADDING}" y2="${CHART_HEIGHT - PADDING}" stroke="#888" stroke-width="1" />
+                    <text x="${currentLang === 'fa' ? CHART_WIDTH - PADDING + 5 : PADDING - 5}" y="${CHART_HEIGHT - PADDING}" fill="#f0f0f0" font-size="10" text-anchor="${currentLang === 'fa' ? 'start' : 'end'}">${toPersianDigits(formatPrice(minPrice).split(',')[0])}K</text>
+                    
+                    <text x="${currentLang === 'fa' ? PADDING + 5 : CHART_WIDTH - PADDING}" y="${CHART_HEIGHT - 5}" fill="#f0f0f0" font-size="10" text-anchor="${currentLang === 'fa' ? 'start' : 'end'}">${translations[currentLang]['day']} ${toPersianDigits(daysInMonth.toString())}</text>
+                    <text x="${currentLang === 'fa' ? CHART_WIDTH - PADDING : PADDING + 5}" y="${CHART_HEIGHT - 5}" fill="#f0f0f0" font-size="10" text-anchor="${currentLang === 'fa' ? 'end' : 'start'}">${translations[currentLang]['day']} 1</text>
+                    
+                    <polyline class="price-line" points="${points}" />
+
+                    ${dailyPrices.map((data, index) => {
+                        const x = PADDING + (index / (daysInMonth - 1)) * graphAreaWidth;
+                        const normalizedPrice = (data.price - minPrice) / (priceRange === 0 ? 1 : priceRange);
+                        const y = PADDING + graphAreaHeight - (normalizedPrice * graphAreaHeight);
+                        const isCurrent = data.day === today.getDate();
+                        const color = data.price === maxPrice ? '#ff4500' : (data.price === minPrice ? '#32cd32' : '#ffcc00');
+                        
+                        return `<circle class="data-point" cx="${x}" cy="${y}" r="${isCurrent ? 4 : 2.5}" fill="${color}" />`;
+                    }).join('')}
+
+                </svg>
+            `;
+            
+            document.getElementById('chart-container').innerHTML = svg;
+
+            // 4. UPDATE PREDICTION SUMMARY
+            document.getElementById('prediction-summary').innerHTML = `
+                <p><b>${translations[currentLang]['prediction_title']}</b></p>
+                <p>${translations[currentLang]['cheapest']} <span class="cheapest">${cheapestDay}</span> ${translations[currentLang]['toman']} ${formatPrice(minPrice)}</p>
+                <p>${translations[currentLang]['expensive']} <span class="expensive">${mostExpensiveDay}</span> ${translations[currentLang]['toman']} ${formatPrice(maxPrice)}</p>
+            `;
+        }
+        
+        // Initial setup function called on <body> onload
+        // The setInterval is now inside initPage()
+        // No code executed outside of functions to ensure proper loading order.
     </script>
 </body>
 </html>
